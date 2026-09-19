@@ -6,10 +6,110 @@ datasource db {
   provider = "postgresql"
 }
 
-// Placeholder model to verify the DB connection end-to-end.
-// Replace with the real schema once the app's data model is defined.
-model LogEntry {
+// Як саме звести кілька записів за період в одне число на картці.
+// Без цього поля вага 78.2 + 79.1 показалась би як 157.3. Деталі — docs/spec.md.
+enum Aggregation {
+  SUM
+  AVG
+  LAST
+  COUNT
+}
+
+// У який бік ціль вважається виконаною: «не менше ніж» чи «не більше ніж».
+enum TargetDirection {
+  AT_LEAST
+  AT_MOST
+}
+
+// За який відрізок часу збирається прогрес до цілі.
+enum TargetPeriod {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
+// Значення — це коди мов (BCP 47) і назви словників shared/i18n/<код>.ts,
+// тому вони в нижньому регістрі, на відміну від решти енумів.
+enum Locale {
+  uk
+  en
+}
+
+model User {
+  id     String  @id @default(cuid())
+  email  String  @unique
+  name   String?
+  image  String?
+  locale Locale  @default(uk)
+
+  metrics Metric[]
+  entries Entry[]
+}
+
+// Довідник: що юзер рахує. Змінюється рідко, описує правила метрики.
+model Metric {
+  id              String          @id @default(cuid())
+  userId          String
+  name            String
+  unit            String
+  aggregation     Aggregation
+  // Ціль необов'язкова: без неї метрика просто рахує й показує число.
+  targetValue     Float?
+  targetDirection TargetDirection @default(AT_LEAST)
+  targetPeriod    TargetPeriod    @default(DAY)
+  color           String
+  sortOrder       Int             @default(0)
+  // Архівація замість видалення: історія записів лишається цілою.
+  archivedAt      DateTime?
+  // Знадобиться, якщо TargetPeriod.YEAR виявиться ковзним від створення метрики
+  // (відкрите питання в docs/spec.md).
+  createdAt       DateTime        @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries Entry[]
+  presets Preset[]
+
+  // Головний екран — це «метрики юзера в його порядку».
+  @@index([userId, sortOrder])
+}
+
+// Журнал: скільки й коли. Росте постійно, редагується.
+model Entry {
   id        String   @id @default(cuid())
-  message   String
-  createdAt DateTime @default(now())
+  metricId  String
+  // Формально зайвий — юзера видно через Metric. Дублюється навмисно, щоб
+  // запит «усі записи юзера за сьогодні» не тягнув JOIN на кожне читання.
+  userId    String
+  // Завжди Float, без поліморфних колонок: «зробив/ні» — це 1/0,
+  // тривалість — хвилини.
+  value     Float
+  // Момент події. Може бути заднім числом: «забув учора, вношу сьогодні».
+  at        DateTime
+  // Той самий момент, але як календарний день у таймзоні юзера. Денормалізований,
+  // щоб групування по днях було звичайним GROUP BY без date-math з таймзонами.
+  localDate DateTime @db.Date
+  note      String?
+
+  metric Metric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Графік і календар однієї метрики за проміжок дат.
+  @@index([metricId, localDate])
+  // Те, заради чого дублюється userId: усі записи юзера за день.
+  @@index([userId, localDate])
+}
+
+// Кнопки швидкого вводу на картці метрики. У v1 не використовуються —
+// таблиця є, UI приїде пізнішою ітерацією (docs/spec.md).
+model Preset {
+  id        String @id @default(cuid())
+  metricId  String
+  label     String
+  value     Float
+  sortOrder Int    @default(0)
+
+  metric Metric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+
+  @@index([metricId, sortOrder])
 }
