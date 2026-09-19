@@ -37,9 +37,17 @@ Next.js (App Router, TypeScript, Tailwind) web app. Package manager: npm.
   here — it's a deliberate org policy, not a transient failure.
 - Consequence: **migrations are authored here but applied by Vercel's build**, which has normal network
   access. To add a schema change: edit `prisma/schema.prisma`, then generate the SQL with
-  `npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --script --config prisma7.config.ts`
-  (this needs no DB connection), save it under `prisma/migrations/<timestamp>_<name>/migration.sql`, commit it.
-  The next Vercel deploy runs `vercel-build`, which applies it via `prisma migrate deploy`.
+  `npx prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --script --config <config> -o <out>.sql`
+  (Prisma 7 renamed `--to-schema-datamodel` to `--to-schema`), save it under
+  `prisma/migrations/<timestamp>_<name>/migration.sql`, commit it. The next Vercel deploy runs
+  `vercel-build`, which applies it via `prisma migrate deploy`.
+- `--from-migrations` replays the existing migrations to work out the "before" state, and for that it needs a
+  **shadow database** — but a local throwaway one, not Neon. `npx prisma dev -d -n <name>` starts a Postgres
+  inside this container and prints its URL; point a temporary config at it
+  (`datasource: { url, shadowDatabaseUrl }` from env vars — `prisma7.config.ts` itself stays untouched) and pass
+  that config to the command above. Stop it afterwards with `npx prisma dev stop <name>` and delete the temp
+  config. Re-running the same command after saving the migration must print "This is an empty migration" —
+  that is the check that migrations and `schema.prisma` agree.
 - If a schema change is needed immediately (not on next deploy), the user can paste the migration SQL into
   Neon's web SQL editor (Vercel Storage tab → the DB → SQL editor) — ask them, don't try to reach it from here.
 
