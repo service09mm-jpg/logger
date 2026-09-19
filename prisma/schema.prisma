@@ -43,6 +43,10 @@ model User {
   image  String?
   locale Locale  @default(uk)
 
+  // Пароль ніколи не зберігається як текст. Тут лежить результат scrypt
+  // разом із власною сіллю — одним рядком (див. src/lib/password.ts).
+  passwordHash String
+
   metrics Metric[]
   entries Entry[]
 }
