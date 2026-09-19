@@ -43,53 +43,12 @@ model User {
   image  String?
   locale Locale  @default(uk)
 
-  // emailVerified і accounts/sessions — обов'язкові поля адаптера Auth.js.
-  // Google їх заповнює сам, руками ми туди не пишемо.
-  emailVerified DateTime?
-  accounts      Account[]
-  sessions      Session[]
+  // Пароль ніколи не зберігається як текст. Тут лежить результат scrypt
+  // разом із власною сіллю — одним рядком (див. src/lib/password.ts).
+  passwordHash String
 
   metrics Metric[]
   entries Entry[]
-}
-
-// Далі три таблиці Auth.js. Їхні імена полів (snake_case) диктує адаптер —
-// це єдине місце в проєкті, де ми не тримаємось camelCase.
-model Account {
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([provider, providerAccountId])
-  @@index([userId])
-}
-
-model Session {
-  sessionToken String   @id
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-
-  @@id([identifier, token])
 }
 
 // Довідник: що юзер рахує. Змінюється рідко, описує правила метрики.

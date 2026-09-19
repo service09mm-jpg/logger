@@ -12,3 +12,18 @@ export function getDictionary(locale: Locale): Dictionary {
   }
   return uk;
 }
+
+/**
+ * Підставляє значення в рядок словника: `fillTemplate(dict.auth.weakPassword,
+ * { min: 8 })`. Зроблено найпростішим способом — заміною `{ключ}` на значення.
+ */
+export function fillTemplate(
+  template: string,
+  values: Record<string, string | number>
+): string {
+  let result = template;
+  for (const [key, value] of Object.entries(values)) {
+    result = result.replaceAll(`{${key}}`, String(value));
+  }
+  return result;
+}

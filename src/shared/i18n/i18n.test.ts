@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { en } from "./en";
 import { uk } from "./uk";
-import { getDictionary, isLocale } from "./index";
+import { fillTemplate, getDictionary, isLocale } from "./index";
 
 function collectKeys(value: unknown, prefix: string): string[] {
   if (value === null || typeof value !== "object") {
@@ -62,5 +62,23 @@ describe("isLocale", () => {
     expect(isLocale("uk")).toBe(true);
     expect(isLocale("en")).toBe(true);
     expect(isLocale("de")).toBe(false);
+  });
+});
+
+describe("fillTemplate", () => {
+  it("підставляє значення замість {ключ}", () => {
+    expect(fillTemplate("не коротший за {min} символів", { min: 8 })).toBe(
+      "не коротший за 8 символів"
+    );
+  });
+
+  it("замінює всі входження", () => {
+    expect(fillTemplate("{a} і ще раз {a}", { a: "так" })).toBe(
+      "так і ще раз так"
+    );
+  });
+
+  it("лишає рядок без плейсхолдерів як є", () => {
+    expect(fillTemplate("просто текст", { min: 8 })).toBe("просто текст");
   });
 });

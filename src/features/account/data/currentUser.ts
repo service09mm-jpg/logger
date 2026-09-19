@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/prisma";
+import { auth } from "./auth";
 import type { Locale } from "@/shared/i18n";
 
 /** Юзер, від імені якого виконується запит. */
