@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getCurrentUser } from "@/features/account";
 import { DEFAULT_LOCALE } from "@/shared/i18n";
@@ -19,6 +19,28 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Logger",
   description: "Трекер довільних метрик",
+  // Safari читає `display: "standalone"` з манифеста не в усіх версіях, тому
+  // для iPhone лишається ще й старий спосіб сказати те саме. Next.js
+  // перетворює це на теги `apple-mobile-web-app-*`, які Safari розуміє давно.
+  appleWebApp: {
+    capable: true,
+    title: "Logger",
+    statusBarStyle: "default",
+  },
+};
+
+/**
+ * Колір системної смуги над застосунком.
+ *
+ * Окремий експорт, а не поле `metadata`: у Next.js 16 усе, що стосується
+ * області перегляду, живе тут. Два значення — щоб смуга збігалася з фоном і в
+ * світлій, і в темній темі, інакше вона світитиме чужим кольором.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
 };
 
 /**
