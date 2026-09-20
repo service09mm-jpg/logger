@@ -71,7 +71,6 @@ export const en: Dictionary = {
     note: "Note",
     notePlaceholder: "Optional",
     submit: "Log",
-    saved: "Logged",
     deleted: "Entry deleted",
     edit: "Edit entry",
     update: "Save",

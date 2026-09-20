@@ -14,6 +14,12 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 /**
  * Кнопка. Приймає всі звичайні атрибути <button> — тому її можна віддати
  * формі як `type="submit"` або повісити `formAction`.
+ *
+ * `active:scale-[0.97]` — те, заради чого все це: палець бачить, що натиснуло,
+ * ще до того, як прийде відповідь сервера. На повільній мережі саме ця
+ * дрібниця відрізняє «застосунок думає» від «застосунок не помітив тапу».
+ * Анімація навмисно коротка (100 мс) і ледь помітна: вона має встигнути
+ * зникнути до того, як юзер переведе погляд.
  */
 export function Button({
   variant = "secondary",
@@ -23,7 +29,7 @@ export function Button({
   return (
     <button
       {...buttonProps}
-      className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`rounded-lg px-4 py-2.5 text-sm font-medium transition duration-100 select-none active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${VARIANT_CLASSES[variant]} ${className}`}
     />
   );
 }

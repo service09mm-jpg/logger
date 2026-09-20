@@ -4,6 +4,7 @@
 // посилання на сторінку метрики. Обидва обробники живуть у браузері.
 
 import Link from "next/link";
+import { LinkPending } from "@/shared/ui/LinkPending";
 import { formatNumber } from "@/shared/ui/formatNumber";
 import type { Dictionary, Locale } from "@/shared/i18n";
 import type { MetricSummary } from "@/features/targets";
@@ -42,8 +43,8 @@ export function MetricCard({
           style={{ backgroundColor: metric.color }}
         />
         <span className="font-medium text-foreground">{metric.name}</span>
-        <span aria-hidden className="ml-auto">
-          ›
+        <span className="ml-auto flex items-center">
+          <LinkPending idle={<span aria-hidden>›</span>} />
         </span>
       </Link>
 
@@ -53,7 +54,7 @@ export function MetricCard({
         type="button"
         onClick={onLog}
         aria-label={`${dict.entry.logTitle}: ${metric.name}`}
-        className="w-full px-4 pt-1 pb-4 text-left"
+        className="w-full px-4 pt-1 pb-4 text-left transition duration-100 select-none active:bg-foreground/5"
       >
         <div className="flex items-baseline gap-2">
           <span className="tabular text-2xl font-semibold text-foreground">

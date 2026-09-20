@@ -25,7 +25,6 @@ export function MetricList({
   locale,
   todayIso,
   logEntryAction,
-  undoEntryAction,
 }: {
   summaries: MetricSummary[];
   dict: Dictionary;
@@ -36,7 +35,6 @@ export function MetricList({
     value: number;
     localDate: string;
   }) => Promise<LogEntryResult>;
-  undoEntryAction: (entryId: string) => Promise<void>;
 }): React.ReactElement {
   // useOptimistic показує майбутній стан ще до відповіді сервера. Коли сервер
   // відповість і сторінка оновиться, React сам викине оптимістичне значення й
@@ -52,10 +50,11 @@ export function MetricList({
   );
 
   const [openMetricId, setOpenMetricId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{
-    message: string;
-    entryId: string | null;
-  } | null>(null);
+  // Повідомлення показується лише коли запис не дійшов до сервера. Підтвердження
+  // успіху тут немає навмисно: значення на картці змінюється миттєво, і це вже
+  // є відповіддю. Банер «Записано · Скасувати» після кожного тапу тільки
+  // заважав — помилку виправляють у журналі метрики, де запис можна видалити.
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const openSummary =
@@ -76,17 +75,8 @@ export function MetricList({
       const result = await logEntryAction({ metricId, value, localDate });
 
       if ("error" in result) {
-        setToast({ message: dict.entry.failed, entryId: null });
-        return;
+        setErrorMessage(dict.entry.failed);
       }
-      setToast({ message: dict.entry.saved, entryId: result.entryId });
-    });
-  }
-
-  function handleUndo(entryId: string): void {
-    setToast(null);
-    startTransition(async () => {
-      await undoEntryAction(entryId);
     });
   }
 
@@ -130,17 +120,8 @@ export function MetricList({
         />
       )}
 
-      {toast === null ? null : (
-        <Toast
-          message={toast.message}
-          actionLabel={toast.entryId === null ? undefined : dict.common.undo}
-          onAction={
-            toast.entryId === null
-              ? undefined
-              : () => handleUndo(toast.entryId as string)
-          }
-          onHide={() => setToast(null)}
-        />
+      {errorMessage === null ? null : (
+        <Toast message={errorMessage} onHide={() => setErrorMessage(null)} />
       )}
     </>
   );

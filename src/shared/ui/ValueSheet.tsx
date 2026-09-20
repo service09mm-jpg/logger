@@ -48,14 +48,19 @@ export function ValueSheet({
   // стан ефектом не треба.
   const [value, setValue] = useState(initialValue);
   const [date, setDate] = useState(initialDate);
+  // Шторка закривається одразу після ✓, але палець встигає натиснути двічі —
+  // а це вже два записи в базі. Прапорець тримається до кінця життя шторки.
+  const [submitted, setSubmitted] = useState(false);
 
   const parsedValue = Number.parseFloat(value);
-  const canSubmit = value.length > 0 && !Number.isNaN(parsedValue);
+  const canSubmit =
+    !submitted && value.length > 0 && !Number.isNaN(parsedValue);
 
   function handleSubmit(): void {
     if (!canSubmit) {
       return;
     }
+    setSubmitted(true);
     onSubmit(parsedValue, date);
   }
 

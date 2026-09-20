@@ -78,7 +78,6 @@ export const uk = {
     note: "Нотатка",
     notePlaceholder: "Необов'язково",
     submit: "Записати",
-    saved: "Записано",
     deleted: "Запис видалено",
     edit: "Редагувати запис",
     update: "Зберегти",

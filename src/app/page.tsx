@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { LinkPending } from "@/shared/ui/LinkPending";
 import { listEntriesBetween, getLatestEntry } from "@/features/entries";
 import { listMetrics, MetricList } from "@/features/metrics";
 import type { Entry } from "@/features/metrics";
 import { earliestPeriodStart, summarizeMetric } from "@/features/targets";
 import { getDictionary } from "@/shared/i18n";
-import { logEntryAction, deleteEntryAction } from "./_actions/entryActions";
+import { logEntryAction } from "./_actions/entryActions";
 import { getTodayIso, requireUser } from "./_lib/requestContext";
 
 /**
@@ -46,8 +47,12 @@ export default async function DashboardPage(): Promise<React.ReactElement> {
     <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
       <header className="mb-5 flex items-baseline justify-between">
         <h1 className="text-xl font-semibold">{dict.dashboard.title}</h1>
-        <Link href="/settings" className="text-sm text-muted hover:text-foreground">
+        <Link
+          href="/settings"
+          className="flex items-center gap-2 text-sm text-muted transition duration-100 hover:text-foreground active:scale-[0.97]"
+        >
           {dict.dashboard.settings}
+          <LinkPending />
         </Link>
       </header>
 
@@ -63,15 +68,15 @@ export default async function DashboardPage(): Promise<React.ReactElement> {
           locale={user.locale}
           todayIso={todayIso}
           logEntryAction={logEntryAction}
-          undoEntryAction={deleteEntryAction}
         />
       )}
 
       <Link
         href="/metrics/new"
-        className="mt-3 block rounded-xl border border-dashed border-line px-4 py-3.5 text-center text-sm font-medium hover:border-foreground/30"
+        className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-dashed border-line px-4 py-3.5 text-center text-sm font-medium transition duration-100 hover:border-foreground/30 active:scale-[0.99]"
       >
         {dict.dashboard.addMetric}
+        <LinkPending />
       </Link>
     </main>
   );

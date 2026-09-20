@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkPending } from "@/shared/ui/LinkPending";
 import { notFound } from "next/navigation";
 import { getChartWindow, MetricChart } from "@/features/charts";
 import { EntryHistory, listEntriesForMetric, listRecentEntries } from "@/features/entries";
@@ -114,9 +115,10 @@ export default async function MetricPage(
 
       <Link
         href={`/metrics/${metric.id}/settings`}
-        className="block rounded-xl border border-line px-4 py-3 text-center text-sm hover:border-foreground/30"
+        className="flex items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-center text-sm transition duration-100 hover:border-foreground/30 active:scale-[0.99]"
       >
         {dict.metric.openSettings}
+        <LinkPending />
       </Link>
     </main>
   );
