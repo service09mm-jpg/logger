@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { getCurrentUser } from "@/features/account";
 import { DEFAULT_LOCALE } from "@/shared/i18n";
 import { TimeZoneSync } from "./_components/TimeZoneSync";
-import { getTimeZone, TIME_ZONE_COOKIE } from "./_lib/requestContext";
+import {
+  getSessionUser,
+  getTimeZone,
+  TIME_ZONE_COOKIE,
+} from "./_lib/requestContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,7 +51,7 @@ export const viewport: Viewport = {
  * таймзона — усе інше малюють самі сторінки.
  */
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   const timeZone = await getTimeZone();
 
   return (

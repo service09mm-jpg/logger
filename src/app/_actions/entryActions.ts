@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getCurrentUser } from "@/features/account";
 import {
   createEntry,
   deleteEntry,
@@ -9,7 +8,7 @@ import {
 } from "@/features/entries";
 import type { LogEntryResult } from "@/features/metrics";
 import { isIsoDate, middayOf } from "@/features/targets";
-import { getTodayIso } from "../_lib/requestContext";
+import { getSessionUser, getTodayIso } from "../_lib/requestContext";
 
 /**
  * Серверні дії для записів.
@@ -33,7 +32,7 @@ export async function logEntryAction(input: {
   value: number;
   localDate: string;
 }): Promise<LogEntryResult> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     return { error: true };
   }
@@ -64,7 +63,7 @@ export async function updateEntryAction(input: {
   value: number;
   localDate: string;
 }): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     return;
   }
@@ -84,7 +83,7 @@ export async function updateEntryAction(input: {
 }
 
 export async function deleteEntryAction(entryId: string): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     return;
   }

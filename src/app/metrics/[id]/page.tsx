@@ -31,28 +31,31 @@ export default async function MetricPage(
   props: PageProps<"/metrics/[id]">
 ): Promise<React.ReactElement> {
   const { id } = await props.params;
-  const user = await requireUser();
+  // Юзер, сьогоднішній день і таймзона один від одного не залежать.
+  const [user, todayIso, timeZone] = await Promise.all([
+    requireUser(),
+    getTodayIso(),
+    getTimeZone(),
+  ]);
   const dict = getDictionary(user.locale);
-  const todayIso = await getTodayIso();
-  const timeZone = await getTimeZone();
 
   const metric = await getMetric(user.id, id);
   if (metric === null) {
     notFound();
   }
 
+  // Так само графік і журнал: обидва залежать від метрики, але не один від
+  // одного, тож їдуть одночасно.
   const chartWindow = getChartWindow(metric, todayIso);
-  const chartEntries = await listEntriesForMetric(
-    user.id,
-    metric.id,
-    chartWindow.startIso,
-    chartWindow.endIso
-  );
-  const recentEntries = await listRecentEntries(
-    user.id,
-    metric.id,
-    HISTORY_LIMIT
-  );
+  const [chartEntries, recentEntries] = await Promise.all([
+    listEntriesForMetric(
+      user.id,
+      metric.id,
+      chartWindow.startIso,
+      chartWindow.endIso
+    ),
+    listRecentEntries(user.id, metric.id, HISTORY_LIMIT),
+  ]);
 
   const summary = summarizeMetric(metric, chartEntries, todayIso);
 
