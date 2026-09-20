@@ -10,6 +10,7 @@ import type { Dictionary, Locale } from "@/shared/i18n";
 import { Toast } from "@/shared/ui/Toast";
 import { ValueSheet } from "@/shared/ui/ValueSheet";
 import { MetricCard } from "./MetricCard";
+import { MetricValue } from "./MetricValue";
 
 /** Що повертає серверна дія: id створеного запису або ознаку помилки. */
 export type LogEntryResult = { entryId: string } | { error: true };
@@ -66,7 +67,10 @@ export function MetricList({
       return;
     }
     const metricId = openMetricId;
-    setOpenMetricId(null);
+
+    // Шторку тут більше не закриваємо: вона показує оновлене значення й іде
+    // сама. Оптимістичне оновлення нижче змінює `openSummary`, а з нього
+    // намальована довідка в самій шторці — тож юзер бачить результат на очах.
 
     // Оптимістичне оновлення дозволене лише всередині переходу — React має
     // знати, доки тримати тимчасовий стан.
@@ -109,6 +113,14 @@ export function MetricList({
               : ""
           }
           initialDate={todayIso}
+          preview={
+            <MetricValue
+              summary={openSummary}
+              dict={dict}
+              locale={locale}
+              variant="sheet"
+            />
+          }
           texts={{
             title: openSummary.metric.name,
             date: dict.entry.date,

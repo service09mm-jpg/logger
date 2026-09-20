@@ -19,7 +19,27 @@ const metric: Metric = {
   sortOrder: 0,
 };
 
-const entries: Entry[] = [];
+/** На картці вже є 400 — щоб було видно, що нове значення додалось. */
+const entries: Entry[] = [
+  {
+    id: "entry-0",
+    metricId: metric.id,
+    value: 400,
+    localDate: TODAY,
+    at: new Date(`${TODAY}T08:00:00.000Z`),
+    note: null,
+  },
+];
+
+
+/** Пошук тексту без огляду на пробіли — див. MetricCard.test.tsx. */
+function textIs(expected: string) {
+  const compact = (text: string): string => text.replace(/\s/g, "");
+  return (_content: string, element: Element | null): boolean =>
+    element !== null &&
+    element.children.length === 0 &&
+    compact(element.textContent ?? "") === compact(expected);
+}
 
 function renderList(
   logEntryAction: (input: {
@@ -56,9 +76,31 @@ describe("MetricList", () => {
     logSeven();
 
     await waitFor(() => expect(logEntryAction).toHaveBeenCalledTimes(1));
+
+    // Спершу дочекатись, поки шторка піде сама: поки вона на екрані, її
+    // «Скасувати» називається так само, як кнопка відкату в тості.
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "7" })).toBeNull()
+    );
+
     // Ні «Записано», ні кнопки відкату: відповіддю на вдалий запис служить
     // саме значення на картці, яке змінюється ще до відповіді сервера.
     expect(screen.queryByRole("button", { name: uk.common.undo })).toBeNull();
+  });
+
+  it("шторка закривається сама, без окремого тапу", async () => {
+    const logEntryAction = vi.fn(async () => ({ entryId: "entry-1" }));
+    renderList(logEntryAction);
+
+    logSeven();
+
+    // Одразу після ✓ шторка ще на екрані — саме в ці мілісекунди юзер бачить
+    // галочку під пальцем.
+    expect(screen.queryByRole("button", { name: "7" })).not.toBeNull();
+
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "7" })).toBeNull()
+    );
   });
 
   it("показує повідомлення, якщо запис не дійшов до сервера", async () => {
@@ -68,5 +110,30 @@ describe("MetricList", () => {
     logSeven();
 
     expect(await screen.findByText(uk.entry.failed)).toBeTruthy();
+  });
+
+  it("показує оновлене значення ще у відкритій шторці", async () => {
+    const logEntryAction = vi.fn(async () => ({ entryId: "entry-1" }));
+    renderList(logEntryAction);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: `${uk.entry.logTitle}: ${metric.name}`,
+      })
+    );
+    // Поки набираємо, у шторці стоїть теперішній підсумок.
+    expect(screen.getAllByText(textIs("400")).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    fireEvent.click(screen.getByRole("button", { name: "5" }));
+    fireEvent.click(screen.getByRole("button", { name: "0" }));
+    fireEvent.click(screen.getByRole("button", { name: uk.entry.submit }));
+
+    // Шторка ще на екрані — і підсумок у ній уже новий. Саме це юзер і бачить
+    // замість зниклого вікна.
+    await waitFor(() =>
+      expect(screen.getAllByText(textIs("650")).length).toBeGreaterThan(0)
+    );
+    expect(screen.queryByRole("button", { name: "7" })).not.toBeNull();
   });
 });

@@ -55,7 +55,7 @@ export function EntryHistory({
       return;
     }
     const entryId = editingEntry.id;
-    setEditingEntry(null);
+    // Шторка показує галочку й закривається сама — див. `ValueSheet`.
     startTransition(async () => {
       await updateEntryAction({ entryId, value, localDate });
     });
