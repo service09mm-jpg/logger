@@ -84,4 +84,16 @@ describe("ValueSheet", () => {
 
     expect(onSubmit).toHaveBeenCalledWith(5, "2026-09-17");
   });
+  it("не відправляє запис двічі, якщо швидко тапнути ✓ два рази", () => {
+    const { onSubmit } = renderSheet();
+
+    fireEvent.click(screen.getByRole("button", { name: "7" }));
+    const submit = screen.getByRole("button", { name: texts.submit });
+    fireEvent.click(submit);
+    fireEvent.click(submit);
+
+    // Шторка закривається не миттєво, тож другий тап цілком реальний — а це
+    // був би другий запис у базі.
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
 });

@@ -43,3 +43,17 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/*
+  Прибираємо сірий прямокутник, яким мобільні браузери підсвічують натиснуте, —
+  замість нього в кнопок є власний стан `:active`, той самий у всьому
+  застосунку. `touch-action: manipulation` вимикає очікування подвійного тапу
+  для зуму: без нього браузер тримає паузу перед тим, як віддати клік, і
+  застосунок здається повільнішим, ніж він є.
+*/
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}

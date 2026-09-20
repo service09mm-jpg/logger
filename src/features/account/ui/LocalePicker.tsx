@@ -1,4 +1,5 @@
 import type { Dictionary, Locale } from "@/shared/i18n";
+import { FormPending } from "@/shared/ui/FormPending";
 
 /**
  * Перемикач мови: дві кнопки в одній формі, кожна зі своїм значенням.
@@ -20,21 +21,23 @@ export function LocalePicker({
 
   return (
     <form action={setLocaleAction} className="flex gap-2">
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="submit"
-          name="locale"
-          value={option.value}
-          className={`rounded-lg border px-4 py-2.5 text-sm ${
-            option.value === current
-              ? "border-foreground text-foreground"
-              : "border-line text-muted hover:text-foreground"
-          }`}
-        >
-          {option.label}
-        </button>
-      ))}
+      <FormPending>
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="submit"
+            name="locale"
+            value={option.value}
+            className={`rounded-lg border px-4 py-2.5 text-sm transition duration-100 select-none active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100 ${
+              option.value === current
+                ? "border-foreground text-foreground"
+                : "border-line text-muted hover:text-foreground"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </FormPending>
     </form>
   );
 }

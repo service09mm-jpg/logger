@@ -30,7 +30,7 @@ export function Numpad({
           key={key}
           type="button"
           onClick={() => appendKey(key)}
-          className="tabular rounded-lg border border-line bg-surface py-3.5 text-lg font-medium text-foreground active:border-foreground/40"
+          className="tabular rounded-lg border border-line bg-surface py-3.5 text-lg font-medium text-foreground transition duration-75 select-none active:scale-95 active:border-foreground/40"
         >
           {key}
         </button>
@@ -39,7 +39,7 @@ export function Numpad({
         type="button"
         onClick={removeLastKey}
         aria-label="backspace"
-        className="rounded-lg border border-line bg-surface py-3.5 text-lg text-muted active:border-foreground/40"
+        className="rounded-lg border border-line bg-surface py-3.5 text-lg text-muted transition duration-75 select-none active:scale-95 active:border-foreground/40"
       >
         ⌫
       </button>

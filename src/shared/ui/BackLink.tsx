@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkPending } from "./LinkPending";
 
 /**
  * Посилання «назад» у шапці екрана.
@@ -24,9 +25,10 @@ export function BackLink({
     <Link
       href={href}
       replace
-      className="text-sm text-muted hover:text-foreground"
+      className="flex items-center gap-2 text-sm text-muted transition duration-100 hover:text-foreground active:scale-[0.97]"
     >
       {label}
+      <LinkPending />
     </Link>
   );
 }

@@ -84,7 +84,7 @@ export function EntryHistory({
             <button
               type="button"
               onClick={() => setEditingEntry(entry)}
-              className="flex flex-1 items-baseline gap-3 text-left"
+              className="flex flex-1 items-baseline gap-3 rounded-md text-left transition duration-100 select-none active:scale-[0.99] active:bg-foreground/5"
             >
               <span className="tabular text-sm font-medium">
                 {formatNumber(entry.value, locale)}
@@ -101,7 +101,7 @@ export function EntryHistory({
               type="button"
               onClick={() => handleDelete(entry)}
               aria-label={dict.common.delete}
-              className="px-1 text-sm text-muted hover:text-red-600"
+              className="rounded-md px-1 text-sm text-muted transition duration-100 select-none hover:text-red-600 active:scale-90"
             >
               ×
             </button>

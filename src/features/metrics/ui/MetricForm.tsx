@@ -1,5 +1,6 @@
 import type { Dictionary } from "@/shared/i18n";
 import { Button } from "@/shared/ui/Button";
+import { FormPending } from "@/shared/ui/FormPending";
 import { Field, FIELD_CLASSES } from "@/shared/ui/Field";
 import { METRIC_COLORS } from "../domain/metricColors";
 import {
@@ -129,9 +130,11 @@ export function MetricForm({
         </div>
       </fieldset>
 
-      <Button type="submit" variant="primary" className="mt-2">
-        {submitLabel}
-      </Button>
+      <FormPending>
+        <Button type="submit" variant="primary" className="mt-2">
+          {submitLabel}
+        </Button>
+      </FormPending>
     </form>
   );
 }
