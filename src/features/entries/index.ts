@@ -5,9 +5,9 @@
 export {
   createEntry,
   deleteEntry,
-  getLatestEntry,
   listEntriesBetween,
   listEntriesForMetric,
+  listLatestEntries,
   listRecentEntries,
   updateEntry,
 } from "./data/entryRepo";

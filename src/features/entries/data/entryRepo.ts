@@ -82,21 +82,33 @@ export async function listEntriesForMetric(
 }
 
 /**
- * Останній запис метрики, скільки б днів тому він не був.
+ * Останні записи одразу кількох метрик — по одному на метрику.
  *
- * Потрібен метрикам з агрегацією LAST: на картці ваги має стояти останнє
- * відоме значення, навіть якщо зважувались позавчора.
+ * Потрібно метрикам з агрегацією LAST: на картці ваги має стояти останнє
+ * відоме значення, навіть якщо зважувались позавчора, тобто поза вікном, яке
+ * головна тягне для решти.
+ *
+ * Раніше тут був запит на **одну** метрику, і головна викликала його в циклі:
+ * три ваги — три окремі походи в базу, і всі по черзі. `distinct` просить базу
+ * лишити по одному рядку на кожне значення `metricId`, а `orderBy` перед ним
+ * каже, який саме лишати — найсвіжіший.
  */
-export async function getLatestEntry(
+export async function listLatestEntries(
   userId: string,
-  metricId: string
-): Promise<Entry | null> {
-  const row = await getPrismaClient().entry.findFirst({
-    where: { userId, metricId },
+  metricIds: string[]
+): Promise<Entry[]> {
+  // Порожній список — не привід питати базу про нічого.
+  if (metricIds.length === 0) {
+    return [];
+  }
+
+  const rows = await getPrismaClient().entry.findMany({
+    where: { userId, metricId: { in: metricIds } },
     orderBy: { at: "desc" },
+    distinct: ["metricId"],
     select: ENTRY_FIELDS,
   });
-  return row === null ? null : toEntry(row);
+  return rows.map(toEntry);
 }
 
 /** Останні записи метрики — журнал на сторінці метрики. */

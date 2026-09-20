@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LinkPending } from "@/shared/ui/LinkPending";
-import { listEntriesBetween, getLatestEntry } from "@/features/entries";
+import { listEntriesBetween, listLatestEntries } from "@/features/entries";
 import { listMetrics, MetricList } from "@/features/metrics";
 import type { Entry } from "@/features/metrics";
 import { earliestPeriodStart, summarizeMetric } from "@/features/targets";
@@ -16,29 +16,30 @@ import { getTodayIso, requireUser } from "./_lib/requestContext";
  * оновлення) живе всередині `MetricList`.
  */
 export default async function DashboardPage(): Promise<React.ReactElement> {
-  const user = await requireUser();
+  // `Promise.all` замість двох `await` поспіль: юзер і сьогоднішній день один
+  // від одного не залежать, тож чекати їх по черзі немає сенсу. Далі так само
+  // скрізь, де запити незалежні, — саме через це сторінка й відкривалась
+  // повільно: не через складність запитів, а через те, що вони стояли в черзі.
+  const [user, todayIso] = await Promise.all([requireUser(), getTodayIso()]);
   const dict = getDictionary(user.locale);
-  const todayIso = await getTodayIso();
 
   const metrics = await listMetrics(user.id);
   const periods = metrics.map((metric) => metric.targetPeriod);
   const windowStart = earliestPeriodStart(periods, todayIso);
 
-  const entries = await listEntriesBetween(user.id, windowStart, todayIso);
-
   // Метрики типу «вага» показують останнє відоме значення, яке цілком могло
-  // бути залоговане до початку вікна — тому їх дотягуємо окремо.
-  const latestEntries: Entry[] = [];
-  for (const metric of metrics) {
-    if (metric.aggregation === "LAST") {
-      const latest = await getLatestEntry(user.id, metric.id);
-      if (latest !== null) {
-        latestEntries.push(latest);
-      }
-    }
-  }
+  // бути залоговане до початку вікна, — тому їх дотягуємо окремо. Раніше це
+  // був окремий запит на кожну таку метрику, у циклі; тепер один на всі.
+  const lastMetricIds = metrics
+    .filter((metric) => metric.aggregation === "LAST")
+    .map((metric) => metric.id);
 
-  const allEntries = [...entries, ...latestEntries];
+  const [entries, latestEntries] = await Promise.all([
+    listEntriesBetween(user.id, windowStart, todayIso),
+    listLatestEntries(user.id, lastMetricIds),
+  ]);
+
+  const allEntries: Entry[] = [...entries, ...latestEntries];
   const summaries = metrics.map((metric) =>
     summarizeMetric(metric, allEntries, todayIso)
   );
