@@ -99,7 +99,7 @@ export function CredentialsForm({
 
       <p className="text-center text-sm text-muted">
         {footer.question}{" "}
-        <Link href={footer.href} className="text-foreground underline">
+        <Link href={footer.href} replace className="text-foreground underline">
           {footer.linkLabel}
         </Link>
       </p>

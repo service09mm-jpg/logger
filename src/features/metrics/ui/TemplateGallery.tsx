@@ -40,6 +40,7 @@ export function TemplateGallery({
 
       <Link
         href="/metrics/new/custom"
+        replace
         className="flex flex-col justify-end gap-1 rounded-xl border border-dashed border-line px-4 py-3.5 text-sm font-medium hover:border-foreground/30"
       >
         {dict.metric.custom}

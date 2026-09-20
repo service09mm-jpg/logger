@@ -3,7 +3,7 @@
 // Клієнтський компонент: шторка слухає клавішу Escape і кліки по тлу, а
 // обробників подій у серверному компоненті бути не може.
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 
 export function Sheet({
@@ -17,6 +17,16 @@ export function Sheet({
   onClose: () => void;
   children: ReactNode;
 }): React.ReactElement | null {
+  // Батько зазвичай передає сюди стрілку, створену прямо в розмітці, — на
+  // кожному рендері це нова функція. Для підписок це дрібниця, але ефект нижче
+  // чіпає історію браузера, і перезапускатись він має лише коли шторка справді
+  // відкрилась чи закрилась. Тому свіжий обробник живе в ref, а залежність у
+  // ефектів лишається одна — `open`.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   // Escape закриває шторку. Підписка живе рівно стільки, скільки шторка
   // відкрита, — інакше слухачі накопичувались би при кожному відкритті.
   useEffect(() => {
@@ -26,13 +36,51 @@ export function Sheet({
 
     function handleKeyDown(event: KeyboardEvent): void {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+  }, [open]);
+
+  // Кнопка «назад» має закривати шторку, а не йти на попередню сторінку.
+  //
+  // Для браузера шторки не існує: вона лише стан у пам'яті React, і в історії
+  // від неї нічого немає. Тому при відкритті ми дописуємо в історію порожній
+  // запис — адреса не змінюється, сторінка не перезавантажується (Next.js
+  // окремо підтримує прямі виклики `history.pushState`), але тепер у стеку є
+  // що знімати. Кнопка «назад» знімає саме його, ми ловимо `popstate` і просто
+  // закриваємо шторку.
+  //
+  // Той самий `popstate` приходить від жесту «свайп від краю» на iPhone і від
+  // системного жесту назад на Android, тож вони запрацюють так само.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    window.history.pushState({ sheet: true }, "");
+
+    // Шторку можна закрити двома способами, і прибирати за собою треба
+    // по-різному. Якщо це зробила кнопка «назад» — запис з історії вже зник.
+    // Якщо ✓, «Скасувати» чи Escape — запис лишився, і його треба зняти
+    // самому, інакше наступне «назад» нічого не зробить.
+    let closedByBackButton = false;
+
+    function handlePopState(): void {
+      closedByBackButton = true;
+      onCloseRef.current();
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      if (!closedByBackButton) {
+        window.history.back();
+      }
+    };
+  }, [open]);
 
   if (!open) {
     return null;

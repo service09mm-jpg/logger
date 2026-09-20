@@ -5,6 +5,7 @@ import { EntryHistory, listEntriesForMetric, listRecentEntries } from "@/feature
 import { getMetric } from "@/features/metrics";
 import { summarizeMetric } from "@/features/targets";
 import { getDictionary } from "@/shared/i18n";
+import { BackLink } from "@/shared/ui/BackLink";
 import { formatNumber } from "@/shared/ui/formatNumber";
 import {
   deleteEntryAction,
@@ -74,9 +75,7 @@ export default async function MetricPage(
           />
           {metric.name}
         </h1>
-        <Link href="/" className="text-sm text-muted hover:text-foreground">
-          {dict.common.back}
-        </Link>
+        <BackLink href="/" label={dict.common.back} />
       </header>
 
       <p className="tabular mb-6 text-3xl font-semibold">

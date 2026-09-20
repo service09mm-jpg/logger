@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { getCurrentUser } from "@/features/account";
 import {
   archiveMetric,
@@ -23,6 +23,14 @@ import { getDictionary } from "@/shared/i18n";
  * Усе, що приходить з форми, — рядки, і жодному з них не можна вірити на
  * слово: форму можна підмінити. Тому кожне значення проходить через перевірку
  * з domain/, а невідоме відкидається на заздалегідь відомий варіант.
+ *
+ * Кожен `redirect` тут явно просить `RedirectType.replace`. Причина в тому, що
+ * `redirect` поводиться по-різному залежно від місця виклику: скрізь він за
+ * замовчуванням замінює поточний запис в історії, а **в серверних діях —
+ * додає новий**. Для нас це завжди не те: дія означає, що крок відпрацював,
+ * і повертатись на заповнену форму вже створеної метрики немає сенсу.
+ * Без `replace` кнопка «назад» після створення метрики веде не на головну, а
+ * назад у майстер створення.
  */
 
 /** Збирає метрику з полів форми, підставляючи безпечні значення за замовчуванням. */
@@ -60,12 +68,12 @@ export async function createFromTemplateAction(
 ): Promise<void> {
   const user = await getCurrentUser();
   if (user === null) {
-    redirect("/login");
+    redirect("/login", RedirectType.replace);
   }
 
   const template = findMetricTemplate(String(formData.get("templateId") ?? ""));
   if (template === null) {
-    redirect("/metrics/new");
+    redirect("/metrics/new", RedirectType.replace);
   }
 
   // Назва й одиниця виміру залежать від мови, тому беруться зі словника юзера
@@ -84,48 +92,48 @@ export async function createFromTemplateAction(
   });
 
   revalidatePath("/");
-  redirect("/");
+  redirect("/", RedirectType.replace);
 }
 
 export async function createMetricAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (user === null) {
-    redirect("/login");
+    redirect("/login", RedirectType.replace);
   }
 
   const input = readMetricInput(formData);
   if (input === null) {
-    redirect("/metrics/new/custom");
+    redirect("/metrics/new/custom", RedirectType.replace);
   }
 
   await createMetric(user.id, input);
 
   revalidatePath("/");
-  redirect("/");
+  redirect("/", RedirectType.replace);
 }
 
 export async function updateMetricAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (user === null) {
-    redirect("/login");
+    redirect("/login", RedirectType.replace);
   }
 
   const metricId = String(formData.get("metricId") ?? "");
   const input = readMetricInput(formData);
   if (input === null || metricId.length === 0) {
-    redirect("/");
+    redirect("/", RedirectType.replace);
   }
 
   await updateMetric(user.id, metricId, input);
 
   revalidatePath("/", "layout");
-  redirect(`/metrics/${metricId}`);
+  redirect(`/metrics/${metricId}`, RedirectType.replace);
 }
 
 export async function archiveMetricAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (user === null) {
-    redirect("/login");
+    redirect("/login", RedirectType.replace);
   }
 
   const metricId = String(formData.get("metricId") ?? "");
@@ -134,5 +142,5 @@ export async function archiveMetricAction(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/", RedirectType.replace);
 }

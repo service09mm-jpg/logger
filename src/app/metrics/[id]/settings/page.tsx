@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMetric, MetricForm } from "@/features/metrics";
 import { getDictionary } from "@/shared/i18n";
+import { BackLink } from "@/shared/ui/BackLink";
 import { Button } from "@/shared/ui/Button";
 import {
   archiveMetricAction,
@@ -25,12 +25,7 @@ export default async function MetricSettingsPage(
     <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
       <header className="mb-5 flex items-baseline justify-between">
         <h1 className="text-xl font-semibold">{dict.metric.settingsTitle}</h1>
-        <Link
-          href={`/metrics/${metric.id}`}
-          className="text-sm text-muted hover:text-foreground"
-        >
-          {dict.common.back}
-        </Link>
+        <BackLink href={`/metrics/${metric.id}`} label={dict.common.back} />
       </header>
 
       <MetricForm

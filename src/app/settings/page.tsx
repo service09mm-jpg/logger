@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { LocalePicker, SignOutButton } from "@/features/account";
 import { getDictionary } from "@/shared/i18n";
+import { BackLink } from "@/shared/ui/BackLink";
 import { setLocaleAction, signOutAction } from "../_actions/accountActions";
 import { requireUser } from "../_lib/requestContext";
 
@@ -12,9 +12,7 @@ export default async function SettingsPage(): Promise<React.ReactElement> {
     <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
       <header className="mb-5 flex items-baseline justify-between">
         <h1 className="text-xl font-semibold">{dict.settings.title}</h1>
-        <Link href="/" className="text-sm text-muted hover:text-foreground">
-          {dict.common.back}
-        </Link>
+        <BackLink href="/" label={dict.common.back} />
       </header>
 
       <section className="mb-8">
