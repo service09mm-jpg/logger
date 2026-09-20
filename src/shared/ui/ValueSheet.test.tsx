@@ -134,4 +134,29 @@ describe("ValueSheet", () => {
 
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
+
+  it("показує курсор, щоб було видно, куди набирається число", () => {
+    renderSheet();
+
+    const caret = screen.getByTestId("caret");
+    expect(caret.className).toContain("animate-caret");
+    // Для скрінрідера курсора не існує: він нічого не повідомляє, а число
+    // поруч і так озвучується.
+    expect(caret.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("поки нічого не набрано, нуль сірий", () => {
+    renderSheet();
+    // Нуль є і на numpad, тому шукаємо саме той, що в полі: на кнопках
+    // numpad інший тег.
+    expect(
+      screen.getByText("0", { selector: "span" }).className
+    ).toContain("text-muted");
+
+    fireEvent.click(screen.getByRole("button", { name: "5" }));
+
+    expect(
+      screen.getByText("5", { selector: "span" }).className
+    ).not.toContain("text-muted");
+  });
 });

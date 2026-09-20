@@ -108,11 +108,25 @@ export function ValueSheet({
           <div className="rounded-lg border border-line px-4 py-3">{preview}</div>
         )}
 
-        <div className="flex items-baseline justify-center gap-2 rounded-lg border border-line py-4">
-          <span className="tabular text-3xl font-semibold">
+        {/* Поле вводу тут несправжнє: набирає numpad, а це просто текст. Тому
+            без курсора незрозуміло, що взагалі відбувається — чи можна писати,
+            чи число вже записане. Курсор малюємо самі: миготлива риска одразу
+            за числом. Поки нічого не набрано, нуль сірий — так видно, що це
+            заготовка, а не введене значення. */}
+        <div className="flex items-baseline justify-center gap-1 rounded-lg border border-line py-4">
+          <span
+            className={`tabular text-3xl font-semibold ${
+              value.length === 0 ? "text-muted" : ""
+            }`}
+          >
             {value.length === 0 ? "0" : value}
           </span>
-          <span className="text-sm text-muted">{unit}</span>
+          <span
+            aria-hidden
+            data-testid="caret"
+            className="animate-caret ml-0.5 h-7 w-0.5 self-center bg-foreground"
+          />
+          <span className="ml-1.5 text-sm text-muted">{unit}</span>
         </div>
 
         <Numpad value={value} onChange={setValue} />
