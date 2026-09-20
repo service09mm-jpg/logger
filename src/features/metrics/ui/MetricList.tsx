@@ -10,6 +10,7 @@ import type { Dictionary, Locale } from "@/shared/i18n";
 import { Toast } from "@/shared/ui/Toast";
 import { ValueSheet } from "@/shared/ui/ValueSheet";
 import { MetricCard } from "./MetricCard";
+import { MetricValue } from "./MetricValue";
 
 /** Що повертає серверна дія: id створеного запису або ознаку помилки. */
 export type LogEntryResult = { entryId: string } | { error: true };
@@ -55,9 +56,6 @@ export function MetricList({
   // є відповіддю. Банер «Записано · Скасувати» після кожного тапу тільки
   // заважав — помилку виправляють у журналі метрики, де запис можна видалити.
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  // Щойно записане значення — щоб картка могла показати, що саме прилетіло.
-  // Живе рівно стільки, скільки триває спливання цифри.
-  const [justLogged, setJustLogged] = useState<PendingEntry | null>(null);
   const [, startTransition] = useTransition();
 
   const openSummary =
@@ -70,9 +68,9 @@ export function MetricList({
     }
     const metricId = openMetricId;
 
-    // Шторку тут більше не закриваємо: вона показує галочку й іде сама, а до
-    // того встигає початись оптимістичне оновлення картки під нею.
-    setJustLogged({ metricId, value });
+    // Шторку тут більше не закриваємо: вона показує оновлене значення й іде
+    // сама. Оптимістичне оновлення нижче змінює `openSummary`, а з нього
+    // намальована довідка в самій шторці — тож юзер бачить результат на очах.
 
     // Оптимістичне оновлення дозволене лише всередині переходу — React має
     // знати, доки тримати тимчасовий стан.
@@ -95,12 +93,6 @@ export function MetricList({
             summary={summary}
             dict={dict}
             locale={locale}
-            justLogged={
-              justLogged?.metricId === summary.metric.id
-                ? justLogged.value
-                : null
-            }
-            onDeltaShown={() => setJustLogged(null)}
             onLog={() => setOpenMetricId(summary.metric.id)}
           />
         ))}
@@ -121,6 +113,14 @@ export function MetricList({
               : ""
           }
           initialDate={todayIso}
+          preview={
+            <MetricValue
+              summary={openSummary}
+              dict={dict}
+              locale={locale}
+              variant="sheet"
+            />
+          }
           texts={{
             title: openSummary.metric.name,
             date: dict.entry.date,

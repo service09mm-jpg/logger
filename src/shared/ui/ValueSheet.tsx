@@ -12,12 +12,15 @@ import { Sheet } from "./Sheet";
 /**
  * Скільки шторка лишається на екрані після ✓.
  *
- * Не затримка й не очікування сервера: запис іде одразу, а ці чверть секунди
- * потрібні, щоб юзер побачив галочку там, де щойно був його палець. Без неї
- * шторка зникає рівно в мить тапу, і єдиний доказ, що щось сталося, — цифра
- * на картці, яку в цей момент ніхто не розглядає.
+ * Не затримка й не очікування сервера: запис іде одразу. Ці міліcекунди
+ * потрібні оку — за них воно встигає побачити, як над numpad змінилось
+ * значення метрики й доповзла смужка прогресу. Якщо шторка зникає раніше,
+ * зміна відбувається за лаштунками, і лишається відчуття, що нічого не
+ * сталось.
+ *
+ * Трохи довше за анімацію смужки (400 мс), щоб вона встигла дійти.
  */
-const CONFIRMATION_MILLISECONDS = 320;
+const CONFIRMATION_MILLISECONDS = 700;
 
 export type ValueSheetTexts = {
   title: string;
@@ -39,6 +42,7 @@ export function ValueSheet({
   initialValue,
   initialDate,
   texts,
+  preview,
   onSubmit,
   onClose,
 }: {
@@ -49,6 +53,15 @@ export function ValueSheet({
   initialValue: string;
   initialDate: string;
   texts: ValueSheetTexts;
+  /**
+   * Поточний стан того, що записуємо, — показується над numpad.
+   *
+   * Компонент і далі нічого не знає ні про метрики, ні про записи: йому
+   * передають готову розмітку. Важливо лише, що вона приходить ззовні й
+   * оновлюється сама — тоді юзер бачить результат свого запису ще до того,
+   * як шторка піде.
+   */
+  preview?: React.ReactNode;
   onSubmit: (value: number, localDate: string) => void;
   onClose: () => void;
 }): React.ReactElement {
@@ -91,6 +104,10 @@ export function ValueSheet({
   return (
     <Sheet open={open} title={label} onClose={onClose}>
       <div className="flex flex-col gap-4">
+        {preview === undefined ? null : (
+          <div className="rounded-lg border border-line px-4 py-3">{preview}</div>
+        )}
+
         <div className="flex items-baseline justify-center gap-2 rounded-lg border border-line py-4">
           <span className="tabular text-3xl font-semibold">
             {value.length === 0 ? "0" : value}
