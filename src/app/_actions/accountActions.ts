@@ -2,7 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import {
   getCurrentUser,
   MIN_PASSWORD_LENGTH,
@@ -82,7 +82,7 @@ export async function registerAction(
     if (error instanceof AuthError) {
       // Акаунт створено, але автоматичний вхід не вдався — лишається
       // звичайний вхід руками.
-      redirect("/login");
+      redirect("/login", RedirectType.replace);
     }
     throw error;
   }
