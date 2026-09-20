@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect, RedirectType } from "next/navigation";
-import { getCurrentUser } from "@/features/account";
 import {
   archiveMetric,
   createMetric,
@@ -16,6 +15,7 @@ import {
 } from "@/features/metrics";
 import type { MetricInput } from "@/features/metrics";
 import { getDictionary } from "@/shared/i18n";
+import { getSessionUser } from "../_lib/requestContext";
 
 /**
  * Серверні дії для метрик.
@@ -66,7 +66,7 @@ function readMetricInput(formData: FormData): MetricInput | null {
 export async function createFromTemplateAction(
   formData: FormData
 ): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     redirect("/login", RedirectType.replace);
   }
@@ -96,7 +96,7 @@ export async function createFromTemplateAction(
 }
 
 export async function createMetricAction(formData: FormData): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     redirect("/login", RedirectType.replace);
   }
@@ -113,7 +113,7 @@ export async function createMetricAction(formData: FormData): Promise<void> {
 }
 
 export async function updateMetricAction(formData: FormData): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     redirect("/login", RedirectType.replace);
   }
@@ -131,7 +131,7 @@ export async function updateMetricAction(formData: FormData): Promise<void> {
 }
 
 export async function archiveMetricAction(formData: FormData): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     redirect("/login", RedirectType.replace);
   }

@@ -4,7 +4,6 @@ import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect, RedirectType } from "next/navigation";
 import {
-  getCurrentUser,
   MIN_PASSWORD_LENGTH,
   registerUser,
   signIn,
@@ -13,6 +12,7 @@ import {
 } from "@/features/account";
 import type { CredentialsFormState } from "@/features/account";
 import { DEFAULT_LOCALE, fillTemplate, getDictionary, isLocale } from "@/shared/i18n";
+import { getSessionUser } from "../_lib/requestContext";
 
 /**
  * Дії входу й реєстрації.
@@ -120,7 +120,7 @@ export async function signOutAction(): Promise<void> {
 }
 
 export async function setLocaleAction(formData: FormData): Promise<void> {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (user === null) {
     return;
   }
