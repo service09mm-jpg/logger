@@ -55,6 +55,9 @@ export function MetricList({
   // є відповіддю. Банер «Записано · Скасувати» після кожного тапу тільки
   // заважав — помилку виправляють у журналі метрики, де запис можна видалити.
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Щойно записане значення — щоб картка могла показати, що саме прилетіло.
+  // Живе рівно стільки, скільки триває спливання цифри.
+  const [justLogged, setJustLogged] = useState<PendingEntry | null>(null);
   const [, startTransition] = useTransition();
 
   const openSummary =
@@ -66,7 +69,10 @@ export function MetricList({
       return;
     }
     const metricId = openMetricId;
-    setOpenMetricId(null);
+
+    // Шторку тут більше не закриваємо: вона показує галочку й іде сама, а до
+    // того встигає початись оптимістичне оновлення картки під нею.
+    setJustLogged({ metricId, value });
 
     // Оптимістичне оновлення дозволене лише всередині переходу — React має
     // знати, доки тримати тимчасовий стан.
@@ -89,6 +95,12 @@ export function MetricList({
             summary={summary}
             dict={dict}
             locale={locale}
+            justLogged={
+              justLogged?.metricId === summary.metric.id
+                ? justLogged.value
+                : null
+            }
+            onDeltaShown={() => setJustLogged(null)}
             onLog={() => setOpenMetricId(summary.metric.id)}
           />
         ))}

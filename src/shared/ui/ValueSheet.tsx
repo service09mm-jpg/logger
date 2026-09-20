@@ -4,10 +4,20 @@
 // готове число їде на сервер. Саме тут живе «гарячий шлях» — два тапи від
 // картки до записаного значення.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
 import { Numpad } from "./Numpad";
 import { Sheet } from "./Sheet";
+
+/**
+ * Скільки шторка лишається на екрані після ✓.
+ *
+ * Не затримка й не очікування сервера: запис іде одразу, а ці чверть секунди
+ * потрібні, щоб юзер побачив галочку там, де щойно був його палець. Без неї
+ * шторка зникає рівно в мить тапу, і єдиний доказ, що щось сталося, — цифра
+ * на картці, яку в цей момент ніхто не розглядає.
+ */
+const CONFIRMATION_MILLISECONDS = 320;
 
 export type ValueSheetTexts = {
   title: string;
@@ -56,12 +66,26 @@ export function ValueSheet({
   const canSubmit =
     !submitted && value.length > 0 && !Number.isNaN(parsedValue);
 
+  // Таймер треба прибрати, якщо шторку закрили раніше — наприклад кнопкою
+  // «назад» одразу після ✓.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (closeTimer.current !== null) {
+        clearTimeout(closeTimer.current);
+      }
+    },
+    []
+  );
+
   function handleSubmit(): void {
     if (!canSubmit) {
       return;
     }
     setSubmitted(true);
+    // Запис іде негайно — картка оновлюється, не чекаючи, поки шторка піде.
     onSubmit(parsedValue, date);
+    closeTimer.current = setTimeout(onClose, CONFIRMATION_MILLISECONDS);
   }
 
   return (
@@ -94,9 +118,19 @@ export function ValueSheet({
             variant="primary"
             onClick={handleSubmit}
             disabled={!canSubmit}
+            // Кнопка справді вимкнена — другий тап нічого не зробить. Але
+            // зблякла вона має бути лише тоді, коли тиснути нема чого: з
+            // галочкою це знак «готово», а не «недоступно».
+            style={submitted ? { opacity: 1 } : undefined}
             className="flex-[2]"
           >
-            {texts.submit}
+            {submitted ? (
+              <span aria-label={texts.submit} className="block text-lg leading-5">
+                ✓
+              </span>
+            ) : (
+              texts.submit
+            )}
           </Button>
         </div>
       </div>

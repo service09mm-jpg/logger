@@ -57,3 +57,47 @@ a,
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+
+/*
+  Щойно записане значення спливає над карткою й тане. Рух короткий і вгору —
+  того самого напрямку, куди воно «пішло» в підсумок метрики.
+*/
+@keyframes delta-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+.animate-delta {
+  animation: delta-rise 1.4s ease-out forwards;
+}
+
+/*
+  Хто просив систему не рухати зображення — тому нічого не рухається. Для
+  людей з вестибулярними розладами анімація буває не прикрасою, а причиною
+  нудоти. Анімації не вимикаються зовсім, а стискаються в мить: обробник
+  `animationend` усе одно спрацює, і те, що після нього прибирається, —
+  прибереться.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

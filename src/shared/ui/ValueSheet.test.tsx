@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ValueSheet } from "./ValueSheet";
 
@@ -95,5 +95,43 @@ describe("ValueSheet", () => {
     // Шторка закривається не миттєво, тож другий тап цілком реальний — а це
     // був би другий запис у базі.
     expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("показує галочку замість підпису одразу після ✓", () => {
+    const { onSubmit } = renderSheet();
+
+    fireEvent.click(screen.getByRole("button", { name: "7" }));
+    fireEvent.click(screen.getByRole("button", { name: texts.submit }));
+
+    // Кнопка лишається на місці, але тепер на ній галочка — підтвердження
+    // з'являється там, де щойно був палець.
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText(texts.submit).textContent).toBe("✓");
+  });
+
+  it("закривається сама трохи згодом, а не в мить тапу", async () => {
+    const onSubmit = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <ValueSheet
+        open
+        label="Калорії"
+        unit="ккал"
+        initialValue=""
+        initialDate="2026-09-19"
+        texts={texts}
+        onSubmit={onSubmit}
+        onClose={onClose}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "7" }));
+    fireEvent.click(screen.getByRole("button", { name: texts.submit }));
+
+    // Запис пішов одразу, а шторка ще на екрані.
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 });

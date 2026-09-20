@@ -113,4 +113,57 @@ describe("MetricCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Записати: Калорії" }));
     expect(onLog).toHaveBeenCalledTimes(1);
   });
+
+  it("щойно записане значення показує з плюсом, коли записи складаються", () => {
+    const summary = summarizeMetric(metric(), [entry(400)], TODAY);
+    render(
+      <MetricCard
+        summary={summary}
+        dict={uk}
+        locale="uk"
+        justLogged={250}
+        onLog={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(textIs("+250"))).toBeInTheDocument();
+  });
+
+  it("для ваги плюса немає — нове значення не додається до старого", () => {
+    const weight = metric({ aggregation: "LAST", targetValue: null, unit: "кг" });
+    const summary = summarizeMetric(weight, [entry(82)], TODAY);
+    render(
+      <MetricCard
+        summary={summary}
+        dict={uk}
+        locale="uk"
+        justLogged={82}
+        onLog={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText(textIs("+82"))).toBeNull();
+  });
+
+  it("поки показується щойно записане, підпис цілі поступається місцем", () => {
+    const summary = summarizeMetric(metric(), [entry(400)], TODAY);
+    const { rerender } = render(
+      <MetricCard summary={summary} dict={uk} locale="uk" onLog={vi.fn()} />
+    );
+    // Спершу в кутку стоїть ціль.
+    expect(screen.getByText(/2 ?000/)).toBeInTheDocument();
+
+    rerender(
+      <MetricCard
+        summary={summary}
+        dict={uk}
+        locale="uk"
+        justLogged={250}
+        onLog={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(textIs("+250"))).toBeInTheDocument();
+    expect(screen.queryByText(/Не більше/)).toBeNull();
+  });
 });

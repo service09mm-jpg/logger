@@ -56,9 +56,31 @@ describe("MetricList", () => {
     logSeven();
 
     await waitFor(() => expect(logEntryAction).toHaveBeenCalledTimes(1));
+
+    // Спершу дочекатись, поки шторка піде сама: поки вона на екрані, її
+    // «Скасувати» називається так само, як кнопка відкату в тості.
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "7" })).toBeNull()
+    );
+
     // Ні «Записано», ні кнопки відкату: відповіддю на вдалий запис служить
     // саме значення на картці, яке змінюється ще до відповіді сервера.
     expect(screen.queryByRole("button", { name: uk.common.undo })).toBeNull();
+  });
+
+  it("шторка закривається сама, без окремого тапу", async () => {
+    const logEntryAction = vi.fn(async () => ({ entryId: "entry-1" }));
+    renderList(logEntryAction);
+
+    logSeven();
+
+    // Одразу після ✓ шторка ще на екрані — саме в ці мілісекунди юзер бачить
+    // галочку під пальцем.
+    expect(screen.queryByRole("button", { name: "7" })).not.toBeNull();
+
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "7" })).toBeNull()
+    );
   });
 
   it("показує повідомлення, якщо запис не дійшов до сервера", async () => {
