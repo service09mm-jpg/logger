@@ -1,26 +1,45 @@
 @import "tailwindcss";
 
+/*
+  Мінімальна тема: одна нейтральна шкала, тонкі межі, без тіней і градієнтів.
+  Єдиний колір в інтерфейсі — колір самої метрики; решта сіра навмисно, щоб
+  дані впадали в око, а не оформлення.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #fafafa;
+  --surface: #ffffff;
+  --foreground: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #09090b;
+    --surface: #131316;
+    --foreground: #fafafa;
+    --muted: #a1a1aa;
+    --border: #27272a;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Цифри в таблицях і на картках не мають стрибати по ширині. */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
