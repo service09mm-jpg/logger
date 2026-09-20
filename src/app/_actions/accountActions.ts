@@ -24,6 +24,23 @@ import { DEFAULT_LOCALE, fillTemplate, getDictionary, isLocale } from "@/shared/
  * Мова тут завжди типова: юзер ще не увійшов, і дізнатись його вибір нізвідки.
  */
 
+/**
+ * Перехід на головну після входу — із заміною запису в історії.
+ *
+ * Сторінка входу — найперший екран сесії, тож вона лежить на самому дні
+ * історії. Якщо просто перейти на головну, вона там і залишиться, і юзер,
+ * натискаючи «назад» достатньо багато разів, зрештою впирається в екран
+ * входу — виглядає так, ніби застосунок його викинув. `replace` затирає
+ * сторінку входу собою: тепер дном історії стає головна, а наступне «назад»
+ * закриває застосунок, як і має бути.
+ *
+ * Функція нічого не повертає й не повертає керування: `redirect` під капотом
+ * кидає виняток, який перехоплює Next.js.
+ */
+function goToDashboard(): never {
+  redirect("/", RedirectType.replace);
+}
+
 export async function signInAction(
   _previousState: CredentialsFormState,
   formData: FormData
@@ -33,18 +50,22 @@ export async function signInAction(
   const password = String(formData.get("password") ?? "");
 
   try {
-    await signIn("credentials", { email, password, redirectTo: "/" });
+    // `redirect: false` — щоб перенаправлення зробити самому. Кукі сесії
+    // `signIn` ставить у будь-якому разі, ще до того, як вирішує, куди вести;
+    // нам потрібна лише можливість сказати `replace` (див. коментар до
+    // `goToDashboard`).
+    await signIn("credentials", { email, password, redirect: false });
   } catch (error) {
-    // Успішний вхід теж закінчується винятком: `signIn` кидає
-    // перенаправлення, і Next.js передає його саме так. Тому ловимо лише
-    // AuthError (невірні дані), а решту кидаємо далі.
+    // Ловимо лише AuthError (невірні дані), а решту кидаємо далі: серед
+    // «решти» буває перенаправлення, яке Next.js теж передає винятком, і
+    // проковтнути його не можна.
     if (error instanceof AuthError) {
       return { errorMessage: dict.auth.invalidCredentials, email };
     }
     throw error;
   }
 
-  return { errorMessage: null, email };
+  goToDashboard();
 }
 
 export async function registerAction(
@@ -76,7 +97,7 @@ export async function registerAction(
     await signIn("credentials", {
       email: result.email,
       password,
-      redirectTo: "/",
+      redirect: false,
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -87,11 +108,15 @@ export async function registerAction(
     throw error;
   }
 
-  return { errorMessage: null, email };
+  goToDashboard();
 }
 
 export async function signOutAction(): Promise<void> {
-  await signOut({ redirectTo: "/login" });
+  // Так само з заміною: після виходу «назад» не має вести назад у застосунок.
+  // Сторінки все одно відкинули б юзера на вхід — але спершу він побачив би,
+  // як вони блимнули.
+  await signOut({ redirect: false });
+  redirect("/login", RedirectType.replace);
 }
 
 export async function setLocaleAction(formData: FormData): Promise<void> {
