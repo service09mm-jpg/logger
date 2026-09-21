@@ -13,6 +13,8 @@ export const en: Dictionary = {
     undo: "Undo",
     today: "Today",
     noTarget: "No target",
+    /** Скорочення тисяч у тісних місцях: 1750 → 1,8k */
+    thousands: "k",
   },
   auth: {
     appName: "Logger",

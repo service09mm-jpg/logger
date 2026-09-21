@@ -75,7 +75,6 @@ export function MetricChart({
     <CalendarChart
       weeks={weeks}
       monthIso={todayIso}
-      color={metric.color}
       scaleMax={scaleMax}
       dict={dict}
       locale={locale}

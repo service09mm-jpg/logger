@@ -12,3 +12,29 @@ export function formatNumber(value: number, locale: Locale): string {
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+/**
+ * Число, яке має влізти в клітинку календаря: 1750 → «1,8к».
+ *
+ * Звичайне форматування тут не годиться — «1 750» у клітинку завширшки з
+ * палець не поміщається. Скорочення від Intl (`notation: "compact"`) теж:
+ * українською воно дає «1,8 тис.», що довше за саме число.
+ *
+ * Суфікс приходить зі словника, бо «к» і «k» — різні літери.
+ */
+export function formatCompactNumber(
+  value: number,
+  locale: Locale,
+  thousandsSuffix: string
+): string {
+  if (Math.abs(value) < 1000) {
+    return formatNumber(value, locale);
+  }
+
+  const thousands = value / 1000;
+  // До десяти тисяч десята частка ще щось означає, далі — ні.
+  const rounded =
+    Math.abs(thousands) < 10 ? Math.round(thousands * 10) / 10 : Math.round(thousands);
+
+  return formatNumber(rounded, locale) + thousandsSuffix;
+}

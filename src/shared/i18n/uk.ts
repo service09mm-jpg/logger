@@ -18,6 +18,8 @@ export const uk = {
     undo: "Скасувати",
     today: "Сьогодні",
     noTarget: "Без цілі",
+    /** Скорочення тисяч у тісних місцях: 1750 → 1,8к */
+    thousands: "к",
   },
   auth: {
     appName: "Logger",
