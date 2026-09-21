@@ -47,7 +47,7 @@ export const METRIC_TEMPLATES: readonly MetricTemplate[] = [
     targetPeriod: "DAY",
     targetDirection: "AT_MOST",
     suggestedTarget: 2000,
-    color: METRIC_COLORS[2],
+    color: METRIC_COLORS[1],
   },
   {
     id: "water",
@@ -55,7 +55,7 @@ export const METRIC_TEMPLATES: readonly MetricTemplate[] = [
     targetPeriod: "DAY",
     targetDirection: "AT_LEAST",
     suggestedTarget: 2000,
-    color: METRIC_COLORS[4],
+    color: METRIC_COLORS[6],
   },
   {
     id: "coffee",
@@ -63,7 +63,7 @@ export const METRIC_TEMPLATES: readonly MetricTemplate[] = [
     targetPeriod: "DAY",
     targetDirection: "AT_MOST",
     suggestedTarget: 3,
-    color: METRIC_COLORS[5],
+    color: METRIC_COLORS[7],
   },
   {
     id: "sleep",
@@ -71,7 +71,7 @@ export const METRIC_TEMPLATES: readonly MetricTemplate[] = [
     targetPeriod: "DAY",
     targetDirection: "AT_LEAST",
     suggestedTarget: 8,
-    color: METRIC_COLORS[6],
+    color: METRIC_COLORS[5],
   },
   {
     id: "workout",
@@ -79,7 +79,7 @@ export const METRIC_TEMPLATES: readonly MetricTemplate[] = [
     targetPeriod: "WEEK",
     targetDirection: "AT_LEAST",
     suggestedTarget: 3,
-    color: METRIC_COLORS[1],
+    color: METRIC_COLORS[2],
   },
   {
     id: "steps",
@@ -87,7 +87,7 @@ export const METRIC_TEMPLATES: readonly MetricTemplate[] = [
     targetPeriod: "DAY",
     targetDirection: "AT_LEAST",
     suggestedTarget: 8000,
-    color: METRIC_COLORS[7],
+    color: METRIC_COLORS[4],
   },
   {
     id: "reading",
